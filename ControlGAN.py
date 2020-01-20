@@ -93,8 +93,8 @@ class ControlGAN():
     ##################################################################################
 
     def rnn_encoder(self, caption, n_words, is_training=True,
-                    embed_dim=300, drop_rate=0.5, n_hidden=128, n_layers=1, bidirectional=True, rnn_type='lstm',
-                    reuse=tf.AUTO_REUSE, scope='rnn_encoder'):
+                    embed_dim=256, drop_rate=0.5, n_hidden=128, n_layers=1, bidirectional=True, rnn_type='lstm',
+                    reuse=tf.AUTO_REUSE, scope='generator_rnn_encoder'):
         with tf.variable_scope(scope, reuse=reuse):
             # caption = [bs, seq_len]
             embeddings = embed_sequence(caption, n_words=n_words, embed_dim=embed_dim, trainable=True, scope='embed_layer')
@@ -108,7 +108,7 @@ class ControlGAN():
 
             return words_emb, sent_emb, mask
 
-    def ca_net(self, text_emb, reuse=tf.AUTO_REUSE, scope='ca_net'):
+    def ca_net(self, text_emb, reuse=tf.AUTO_REUSE, scope='generator_ca_net'):
         with tf.variable_scope(scope, reuse=reuse):
             mu = fully_connected(text_emb, units=self.z_dim, use_bias=True, sn=self.sn, scope='mu_fc')
             mu = relu(mu)
