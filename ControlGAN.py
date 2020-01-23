@@ -356,6 +356,7 @@ class ControlGAN():
             real_imgs = [real_img_64, real_img_128, real_img_256]
 
             uncond_real_logits, cond_real_logits, real_emb_features = self.discriminator([real_img_64, real_img_128, real_img_256], sent_emb)
+            _, cond_wrong_logits, _ = self.discriminator([real_img_64[:(self.batch_size - 1)], real_img_128[:(self.batch_size - 1)], real_img_256[:(self.batch_size - 1)]], sent_emb[1:self.batch_size])
             uncond_fake_logits, cond_fake_logits, _ = self.discriminator([fake_img_64, fake_img_128, fake_img_256], sent_emb)
 
             self.g_adv_loss, self.d_adv_loss = 0, 0
@@ -366,7 +367,11 @@ class ControlGAN():
                 self.g_adv_loss += self.adv_weight * (generator_loss(self.gan_type, uncond_fake_logits[i]) + generator_loss(self.gan_type, cond_fake_logits[i]))
                 self.g_vgg_loss += self.vgg_weight * (vgg16_perceptual_loss(real_imgs[i], fake_imgs[i], class_vgg_16))
 
-                self.d_adv_loss += self.adv_weight * (discriminator_loss(self.gan_type, uncond_real_logits[i], uncond_fake_logits[i]) + discriminator_loss(self.gan_type, cond_real_logits[i], cond_fake_logits[i])) / 2
+                uncond_real_loss, uncond_fake_loss = discriminator_loss(self.gan_type, uncond_real_logits[i], uncond_fake_logits[i])
+                cond_real_loss, cond_fake_loss = discriminator_loss(self.gan_type, cond_real_logits[i], cond_fake_logits[i])
+                _, cond_wrong_loss = discriminator_loss(self.gan_type, None, cond_wrong_logits[i])
+
+                self.d_adv_loss += self.adv_weight * (((uncond_real_loss + cond_real_loss) / 2) + (uncond_fake_loss + cond_fake_loss + cond_wrong_loss) / 3)
                 self.d_word_loss += self.word_weight * word_level_correlation_loss(real_emb_features[i], word_emb, gamma1=4.0, gamma2=5.0)
 
             self.g_kl_loss = self.kl_weight * kl_loss(mu, logvar)
