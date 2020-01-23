@@ -527,7 +527,7 @@ def func_attention(img_feature, word_emb, gamma1=4.0):
     attn = tf.nn.softmax(attn)
     attn = tf.reshape(attn, [bs, seq_len, hw])
 
-    weighted_context = tf.matmul(context, attn, transpose_b=True) # [bs, 256, seq_len]
+    weighted_context = tf.matmul(context, attn, transpose_a=True, transpose_b=True) # [bs, 256, seq_len]
 
     return weighted_context, tf.reshape(tf.transpose(attn, [0, 2, 1]), [bs, h, w, seq_len])
 
