@@ -479,7 +479,7 @@ def word_level_correlation_loss(img_feature, word_emb, gamma1=4.0, gamma2=5.0):
         aver_word = tf.reduce_mean(word, axis=1, keepdims=True) # [bs, 1, 256]
 
         res_word = tf.matmul(aver_word, word, transpose_b=True) # [bs, 1, seq_len]
-        res_word_softmax = tf.nn.softmax(res_word, axis=-1)
+        res_word_softmax = tf.nn.softmax(res_word, axis=1)
         res_word_softmax = tf.tile(res_word_softmax, multiples=[1, weighted_context.shape[1], 1]) # [bs, 256, seq_len]
 
         self_weighted_context = tf.transpose(weighted_context * res_word_softmax, perm=[0, 2, 1]) # [bs, seq_len, 256]
@@ -514,8 +514,8 @@ def func_attention(img_feature, word_emb, gamma1=4.0):
     # context = [bs, 17, 17, 256]
     # query = [bs, seq_len, 256]
     # 256 = ndf
-    context = tf.reshape(img_feature, [bs, -1, hw]) # [bs, 256, hw]
-    attn = tf.matmul(context, word_emb, transpose_a=True, transpose_b=True) # [bs, hw, seq_len]
+    context = tf.reshape(img_feature, [bs, hw, -1]) # [bs, hw, 256]
+    attn = tf.matmul(context, word_emb, transpose_b=True) # [bs, hw, seq_len]
     attn = tf.reshape(attn, [bs*hw, seq_len])
     attn = tf.nn.softmax(attn)
 
