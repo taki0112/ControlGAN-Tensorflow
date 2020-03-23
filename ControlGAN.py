@@ -1,7 +1,7 @@
 from utils import *
 import time
 from tensorflow.python.data.experimental import prefetch_to_device, shuffle_and_repeat, map_and_batch # >= tf 1.15
-from class_module import *
+from networks import *
 
 class ControlGAN():
     def __init__(self, args):
@@ -292,7 +292,7 @@ class ControlGAN():
             for i in range(3):
 
                 g_adv_loss += self.adv_weight * (generator_loss(self.gan_type, uncond_fake_logits[i]) + generator_loss(self.gan_type, cond_fake_logits[i]))
-                g_vgg_loss += self.vgg_weight * (L1_loss(self.vgg_16(real_imgs[i]), self.vgg_16(fake_imgs[i])))
+                g_vgg_loss += self.vgg_weight * (L2_loss(self.vgg_16(real_imgs[i]), self.vgg_16(fake_imgs[i])))
 
             word_feature, sent_code = self.cnn_encoder(fake_256, training=True)
 
